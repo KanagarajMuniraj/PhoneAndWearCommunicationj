@@ -147,7 +147,7 @@ public abstract class BaseListener {
         synchronized (listenerClasses) {
             WeakReference<Object> exist = getExistingByListener(listener);
             if (exist != null) {
-                listenerClasses.remove(listener);
+                listenerClasses.remove(exist);
                 objectAnnotationCache.remove(listener);
             }
         }
