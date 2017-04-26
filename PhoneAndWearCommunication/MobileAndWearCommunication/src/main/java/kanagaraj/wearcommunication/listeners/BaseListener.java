@@ -49,7 +49,7 @@ public abstract class BaseListener {
     //as well. In that case it can be avoided if base path provided.
     private final String BASE_PATH;
 
-    private final Handler mMainHandler;
+    protected final Handler mMainHandler;
     private final Handler mBkgndHandler;
 
     private class AnnotationProperties {
@@ -140,7 +140,7 @@ public abstract class BaseListener {
         return exist;
     }
     /**
-     * Unregisters class from listening for the MessageReceived Changes
+     * Unregisters class from listening for the Changes
      * @param listener
      */
     public void removeListener(Object listener) {
@@ -282,20 +282,28 @@ public abstract class BaseListener {
                 int callingThread = getCallingThread(annotationProperties.annotation);
                 Log.d(TAG, "Calling Method on Thread : " + callingThread);
 
-                if (callingThread == AnnotationConstants.BACKGROUND_THREAD) {
+                if (callingThread == AnnotationConstants.BACKGROUND_THREAD
+                        && Looper.getMainLooper() == Looper.myLooper()) {
+
                     mBkgndHandler.post(new Runnable() {
                         @Override
                         public void run() {
                             callTarget(annotationProperties, listener, callParams);
                         }
                     });
-                } else {
+
+                } else if (callingThread == AnnotationConstants.MAIN_THREAD
+                            && Looper.getMainLooper() != Looper.myLooper()) {
+
                     mMainHandler.post(new Runnable() {
                         @Override
                         public void run() {
                             callTarget(annotationProperties, listener, callParams);
                         }
                     });
+
+                } else {
+                    callTarget(annotationProperties, listener, callParams);
                 }
             }
         }
